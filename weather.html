@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather Forecast</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+
+        body {
+    background: linear-gradient(135deg, #6a11cb, #2575fc);
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    text-align: center;
+    padding: 20px;
+
+    background-image: url("https://images.unsplash.com/photo-1562155618-e1a8bc2eb04f?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTJ8fHdlYXRoZXIlMjBmb3JlY2FzdHxlbnwwfHwwfHx8MA%3D%3D");
+    background-repeat: no-repeat;  /* Prevents the image from repeating */
+    background-size: cover;        /* Ensures the image covers the entire viewport */
+    background-position: center;   /* Centers the image */
+}
+
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+            max-width: 400px;
+            width: 100%;
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h1 {
+            font-size: 2em;
+            margin-bottom: 20px;
+        }
+
+        .weather-icon {
+            font-size: 4em;
+            margin: 20px 0;
+        }
+
+        .temperature {
+            font-size: 3em;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .description {
+            font-size: 1.2em;
+            margin: 10px 0;
+        }
+
+        .details {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+        }
+
+        .details div {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 10px;
+            border-radius: 10px;
+            width: 45%;
+            text-align: center;
+        }
+
+        .details i {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+        }
+
+        .details p {
+            font-size: 1em;
+        }
+
+        button {
+            background: white;
+            color: #2575fc;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1em;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .error {
+            color: #ff6b6b;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Weather Forecast</h1>
+        <div class="weather-icon" id="weatherIcon">🌤️</div>
+        <div class="temperature" id="temperature">--°C</div>
+        <div class="description" id="description">Fetching weather...</div>
+        <div class="details">
+            <div>
+                <i class="fas fa-tint"></i>
+                <p id="humidity">--%</p>
+            </div>
+            <div>
+                <i class="fas fa-wind"></i>
+                <p id="windSpeed">-- km/h</p>
+            </div>
+        </div>
+        <button id="getWeatherBtn">Get Weather</button>
+        <div class="error" id="error"></div>
+    </div>
+
+    <script>
+        const weatherIcon = document.getElementById("weatherIcon");
+        const temperature = document.getElementById("temperature");
+        const description = document.getElementById("description");
+        const humidity = document.getElementById("humidity");
+        const windSpeed = document.getElementById("windSpeed");
+        const error = document.getElementById("error");
+
+        document.getElementById("getWeatherBtn").addEventListener("click", getWeather);
+
+        function getWeather() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(fetchWeather, showError);
+            } else {
+                error.textContent = "Geolocation is not supported by this browser.";
+            }
+        }
+
+        function fetchWeather(position) {
+            const lat = position.coords.latitude;
+            const lon = position.coords.longitude;
+
+            // Open-Meteo API endpoint
+            const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&hourly=temperature_2m,relativehumidity_2m,windspeed_10m`;
+
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data); // Log the API response
+                    if (data.current_weather) {
+                        displayWeather(data);
+                    } else {
+                        error.textContent = "Error fetching weather data.";
+                    }
+                })
+                .catch(err => {
+                    console.error("Fetch error:", err); // Log any fetch errors
+                    error.textContent = "Error fetching weather data.";
+                });
+        }
+
+        function displayWeather(data) {
+            const current = data.current_weather;
+
+            // Update weather icon (basic mapping)
+            const weatherCode = current.weathercode;
+            const iconMap = {
+                0: "☀️", // Clear sky
+                1: "🌤️", // Mainly clear
+                2: "⛅", // Partly cloudy
+                3: "☁️", // Overcast
+                45: "🌫️", // Fog
+                48: "🌫️", // Depositing rime fog
+                51: "🌧️", // Light drizzle
+                53: "🌧️", // Moderate drizzle
+                55: "🌧️", // Dense drizzle
+                56: "🌧️", // Light freezing drizzle
+                57: "🌧️", // Dense freezing drizzle
+                61: "🌧️", // Slight rain
+                63: "🌧️", // Moderate rain
+                65: "🌧️", // Heavy rain
+                66: "🌧️", // Light freezing rain
+                67: "🌧️", // Heavy freezing rain
+                71: "🌨️", // Slight snow fall
+                73: "🌨️", // Moderate snow fall
+                75: "🌨️", // Heavy snow fall
+                77: "🌨️", // Snow grains
+                80: "🌧️", // Slight rain showers
+                81: "🌧️", // Moderate rain showers
+                82: "🌧️", // Violent rain showers
+                85: "🌨️", // Slight snow showers
+                86: "🌨️", // Heavy snow showers
+                95: "⛈️", // Thunderstorm
+                96: "⛈️", // Thunderstorm with slight hail
+                99: "⛈️", // Thunderstorm with heavy hail
+            };
+            weatherIcon.textContent = iconMap[weatherCode] || "🌤️";
+
+            // Update weather details
+            temperature.textContent = `${current.temperature}°C`;
+            description.textContent = `Weather Code: ${weatherCode}`;
+            humidity.textContent = `${data.hourly.relativehumidity_2m[0]}%`;
+            windSpeed.textContent = `${current.windspeed} km/h`;
+        }
+
+        function showError(err) {
+            switch (err.code) {
+                case err.PERMISSION_DENIED:
+                    error.textContent = "User denied the request for Geolocation.";
+                    break;
+                case err.POSITION_UNAVAILABLE:
+                    error.textContent = "Location information is unavailable.";
+                    break;
+                case err.TIMEOUT:
+                    error.textContent = "The request to get user location timed out.";
+                    break;
+                case err.UNKNOWN_ERROR:
+                    error.textContent = "An unknown error occurred.";
+                    break;
+            }
+        }
+    </script>
+
+</body>
+</html>

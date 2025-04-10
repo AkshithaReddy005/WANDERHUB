@@ -1,0 +1,1083 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Landmark Detector</title>
+    <style>
+        /* --- Google Font --- */
+        @import url("https://fonts.googleapis.com/css2?family=Merriweather:wght@400;600&family=Poppins:wght@300;400;500&display=swap");
+
+        /* --- General Styles --- */
+        body {
+            font-family: "Poppins", sans-serif;
+            background: #faf8f3;
+            color: #3b3b3b;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            height: 100vh;
+            margin: 0;
+            padding: 20px;
+            transition: background 0.3s ease, color 0.3s ease;
+            background-image: url("https://images.unsplash.com/photo-1536698658763-878a02695d1c?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTR8fHRvdXJpc218ZW58MHx8MHx8fDA%3D");
+            background-repeat: no-repeat;
+            /* Prevents repeating */
+            background-size: cover;
+            /* Ensures the image covers the sidebar */
+            background-position: center;
+        }
+
+        body.dark-mode {
+            background: #1a1a1a;
+            color: #f5f5f5;
+        }
+
+        /* --- Container Box --- */
+        .container {
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            width: 700px;
+            color: #3b3b3b;
+            border: 2px solid #c2a878;
+            transition: background 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .dark-mode .container {
+            background: #2d2d2d;
+            color: #f5f5f5;
+            border-color: #444;
+        }
+
+        /* --- Header Buttons --- */
+        .header-buttons {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+        }
+
+        /* --- Left Section --- */
+        .left-section {
+            text-align: left;
+        }
+
+        /* --- Right Section --- */
+        .right-section {
+            display: none;
+            margin-top: 20px;
+            width: 100%;
+            /* Ensure it takes full width */
+        }
+
+        .split-view .left-section {
+            width: 100%;
+            /* Ensure left section takes full width */
+        }
+
+        .split-view .right-section {
+            display: block;
+            width: 100%;
+            /* Ensure right section takes full width */
+            padding-left: 0;
+            /* Remove padding */
+        }
+
+        /* --- Heading --- */
+        h1 {
+            font-size: 30px;
+            font-family: "Merriweather", serif;
+            color: #1d4e42;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .dark-mode h1 {
+            color: #f5f5f5;
+        }
+
+        /* --- Input Box & Select Dropdown --- */
+        .prompt-box {
+            width: 90%;
+            padding: 12px;
+            font-size: 15px;
+            background: #f7f3eb;
+            color: #3b3b3b;
+            border: 1px solid #c2a878;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            text-align: center;
+            transition: 0.3s;
+        }
+
+        .dark-mode .prompt-box {
+            background: #333;
+            color: #f5f5f5;
+            border-color: #444;
+        }
+
+        .prompt-box:focus {
+            border-color: #1d4e42;
+            box-shadow: 0 0 10px rgba(29, 78, 66, 0.3);
+        }
+
+        /* --- Buttons --- */
+        .btn {
+            background: linear-gradient(45deg, #c2a878, #a88c66);
+            border: none;
+            padding: 10px 15px;
+            /* Reduced padding */
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: 0.4s;
+            margin: 4px;
+            /* Reduced margin */
+        }
+
+        .btn:hover {
+            background: linear-gradient(45deg, #a88c66, #8c7355);
+            transform: scale(1.05);
+        }
+
+        /* --- Video and Image Preview --- */
+        video,
+        img {
+            width: 80%;
+            height: 700px;
+            border-radius: 10px;
+            margin-top: 12px;
+            border: 2px solid #c2a878;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+            display: none;
+        }
+
+        /* --- AI Description Box --- */
+        #description {
+
+            margin-top: 15px;
+            padding: 12px;
+            border-radius: 10px;
+            background: #f5f0ea;
+            color: #4a4a4a;
+            font-size: 15px;
+            font-weight: 500;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.08);
+            border-left: 4px solid #1d4e42;
+        }
+
+        .dark-mode #description {
+            background: #333;
+            color: #f5f5f5;
+            border-color: #444;
+        }
+
+        /* --- Sidebar --- */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: -250px;
+            width: 250px;
+            height: 100%;
+            background: #ffffff;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
+            transition: left 0.3s ease;
+            z-index: 1000;
+            padding: 20px;
+            background-image: url("https://plus.unsplash.com/premium_photo-1677002240252-af3f88114efc?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8dG91cmlzbXxlbnwwfHwwfHx8MA%3D%3D");
+            background-repeat: no-repeat;
+            /* Prevents repeating */
+            background-size: cover;
+            /* Ensures the image covers the sidebar */
+            background-position: center;
+            /* Centers the image */
+
+        }
+
+        .sidebar.active {
+            left: 0;
+        }
+
+        .sidebar h2 {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #2c3e50;
+        }
+
+        .sidebar ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .sidebar ul li {
+            margin: 15px 0;
+            font-size: 16px;
+            font-weight: 500;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+        }
+
+        .sidebar ul li i {
+            font-size: 18px;
+            color: #3498db;
+        }
+
+        .dark-mode .sidebar {
+            background: #2d2d2d;
+            color: #f5f5f5;
+        }
+
+        .dark-mode .sidebar h2 {
+            color: #f5f5f5;
+        }
+
+        .dark-mode .sidebar ul li {
+            color: #f5f5f5;
+        }
+
+        .dark-mode .sidebar ul li i {
+            color: #3498db;
+        }
+
+        /* --- Responsive Design --- */
+        @media (max-width: 768px) {
+            .container {
+                width: 90%;
+                padding: 20px;
+            }
+
+            .btn {
+                padding: 5px 5px;
+            }
+
+            .split-view .left-section,
+            .split-view .right-section {
+                width: 100%;
+                padding-left: 0;
+            }
+        }
+
+        label {
+            font-size: 20px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            width: 400px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        .modal-content h2 {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #1d4e42;
+        }
+
+        .modal-content .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .modal-content .form-group label {
+            font-size: 14px;
+            font-weight: 500;
+            color: #555;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .modal-content .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .modal-content .form-group select:focus {
+            border-color: #1d4e42;
+            box-shadow: 0 0 10px rgba(29, 78, 66, 0.3);
+            outline: none;
+        }
+
+        .modal-content .btn {
+            margin-top: 20px;
+        }
+
+
+
+        #historySection {
+            margin-top: 20px;
+            padding: 10px;
+            background: #f5f0ea;
+            border-radius: 8px;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.08);
+        }
+
+        #historySection.hidden {
+            display: none;
+        }
+
+        #historyList {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        #historyList li {
+            padding: 8px;
+            margin: 5px 0;
+            background: #ffffff;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        #historyList li:hover {
+            background: #e0e0e0;
+        }
+
+        /* Enhanced UI Styles */
+        .main-content {
+            display: flex;
+            gap: 30px;
+            padding: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .left-section {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .left-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, #4CAF50, #2196F3, #9C27B0);
+            animation: gradientMove 3s linear infinite;
+        }
+
+        @keyframes gradientMove {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .right-section {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .right-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, #FF9800, #F44336, #E91E63);
+            animation: gradientMove 3s linear infinite;
+        }
+
+        .camera-container {
+            position: relative;
+            margin-bottom: 20px;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .camera-container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        #videoElement {
+            width: 100%;
+            border-radius: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .camera-controls {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px;
+            z-index: 2;
+        }
+
+        .camera-btn {
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .camera-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+            background: #fff;
+        }
+
+        .camera-btn i {
+            font-size: 18px;
+            transition: all 0.3s ease;
+        }
+
+        .camera-btn:hover i {
+            transform: scale(1.1);
+        }
+
+        .upload-container {
+            margin-top: 20px;
+            padding: 20px;
+            border: 2px dashed #4CAF50;
+            border-radius: 15px;
+            text-align: center;
+            transition: all 0.3s ease;
+            background: rgba(76, 175, 80, 0.05);
+        }
+
+        .upload-container:hover {
+            background: rgba(76, 175, 80, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .upload-btn {
+            background: #4CAF50;
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.2);
+        }
+
+        .upload-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.3);
+            background: #43A047;
+        }
+
+        .upload-btn i {
+            font-size: 18px;
+            transition: all 0.3s ease;
+        }
+
+        .upload-btn:hover i {
+            transform: scale(1.1);
+        }
+
+        .ai-description {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .ai-description:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .history-list {
+            margin-top: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+
+        .history-list::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .history-list::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+
+        .history-list::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+
+        .history-list::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        .history-item {
+            background: white;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .history-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            background: #f8f9fa;
+        }
+
+        .history-item img {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            object-fit: cover;
+        }
+
+        .history-item-content {
+            flex: 1;
+        }
+
+        .history-item-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #333;
+        }
+
+        .history-item-description {
+            font-size: 14px;
+            color: #666;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .delete-btn {
+            background: none;
+            border: none;
+            color: #dc3545;
+            cursor: pointer;
+            padding: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .delete-btn:hover {
+            transform: scale(1.1);
+            color: #c82333;
+        }
+
+        /* Dark mode enhancements */
+        .dark-mode .left-section,
+        .dark-mode .right-section {
+            background: rgba(33, 33, 33, 0.95);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .dark-mode .camera-btn {
+            background: rgba(33, 33, 33, 0.9);
+            color: #fff;
+        }
+
+        .dark-mode .camera-btn:hover {
+            background: rgba(33, 33, 33, 1);
+        }
+
+        .dark-mode .upload-container {
+            border-color: #66BB6A;
+            background: rgba(76, 175, 80, 0.1);
+        }
+
+        .dark-mode .upload-container:hover {
+            background: rgba(76, 175, 80, 0.15);
+        }
+
+        .dark-mode .ai-description {
+            background: #2d2d2d;
+        }
+
+        .dark-mode .history-item {
+            background: #2d2d2d;
+        }
+
+        .dark-mode .history-item:hover {
+            background: #333;
+        }
+
+        .dark-mode .history-item-title {
+            color: #fff;
+        }
+
+        .dark-mode .history-item-description {
+            color: #aaa;
+        }
+
+        /* Loading animation */
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #4CAF50;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Responsive enhancements */
+        @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
+            }
+
+            .camera-controls {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .camera-btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container" id="mainContainer">
+        <div class="header-buttons">
+            <button id="themeToggle" class="btn" onclick="toggleTheme()">🌙</button>
+            <button id="sidebarToggle" class="btn" onclick="toggleSidebar()">☰</button>
+        </div>
+        <div class="left-section">
+            <h1>📸 WANDER HUB</h1>
+            <p>Capture or Upload an Image to Get AI-based Landmark Info</p>
+
+            <!-- Location Search Input -->
+            <!--<input type="text" class="prompt-box" placeholder="Search location by name" style="width: 400px;">
+            <button class="btn" id="searchLocationBtn" onclick="searchLocation()">🔍 Search Location</button>...>-->
+
+            <br />
+            <br />
+
+            <!-- Prompt Input -->
+            <label for="promptInput">Enter a description prompt:</label>
+            <input type="text" id="promptInput" class="prompt-box" placeholder="Describe the landmark..."
+                title="Enter a prompt for AI analysis">
+
+            <!-- Language Selection -->
+            <label for="languageSelect">Select Language:</label>
+            <select id="languageSelect" class="prompt-box" title="Choose a language for AI response">
+                <option value="English">English</option>
+                <option value="Spanish">Spanish</option>
+                <option value="French">French</option>
+                <option value="Telugu">Telugu</option>
+                <option value="Hindi">Hindi</option>
+                <option value="Malayalam">Malayalam</option>
+                <option value="Kannada">Kannada</option>
+                <option value="Bengali">Bengali</option>
+                <option value="Tamil">Tamil</option>
+            </select>
+            <br>
+            <!-- Image Upload -->
+            <label for="fileInput">Upload an Image:📤</label>
+            <br>
+            <input type="file" id="fileInput" accept="image/*" class="btn" title="Upload an image for AI analysis">
+            <br>
+            <button class="btn" onclick="openCamera()"> Open Camera</button>
+            <button class="btn" onclick="capturePhoto()" id="captureBtn" class="hidden">📸 Take Photo</button>
+
+            <!-- Video for Camera -->
+            <video id="video" autoplay class="hidden"></video>
+
+
+            <!-- Canvas for Capturing Image -->
+            <canvas id="canvas" class="hidden"></canvas>
+
+            <!-- Display Image -->
+            <img id="capturedImage" class="hidden" />
+            <br>
+            <!-- Generate Description Button -->
+            <button class="btn hidden" id="generateBtn" onclick="generateDescription()"
+                title="Analyze image and get AI-based landmark info">🔍 Get Landmark Info</button>
+            <div id="description"></div>
+            <!-- Audio Guide -->
+            <h2>🔊 Audio Guide</h2>
+            <button class="btn" onclick="speakDescription()">🎙 Listen</button>
+
+            <!-- AI Photo Enhancement -->
+            <h2>🖼 AI Photo Enhancement</h2>
+            <button class="btn" onclick="enhancePhoto()">✨ Enhance Image</button>
+            <img id="enhancedImage" class="hidden" alt="Enhanced Image">
+        </div>
+
+        <!-- Right Section (Hidden Initially) -->
+        <div class="right-section" id="rightSection">
+            <!-- AI Generated Description -->
+            <div id="descriptionDiv"></div>
+        </div>
+
+        <!-- Left Section -->
+
+
+
+
+        <!-- Sidebar -->
+        <div class="sidebar" id="sidebar">
+            <h2><i class="fas fa-bars"></i> Menu</h2>
+            <ul>
+                <li>
+                    <a href="weather.html" style="text-decoration: none; color: inherit;">
+                        <i class="fas fa-cloud-sun"></i>☀️ Weather Forecast
+                    </a>
+                </li>
+                <li onclick="openSettingsModal()"><i class="fas fa-cog"></i> ⚙️Settings</li>
+                <li onclick="navigateToPage()">
+                    <i class="fas fa-search"></i> 🍽️Search Nearby
+                </li>
+                <li onclick="navigateToAttractions()">
+                    <i class="fas fa-landmark"></i> 🗺️Tourist Attractions
+                </li>
+                <li onclick="navigateToTravelPlanner()">
+                    <i class="fas fa-plane"></i> ✈️Travel Planner
+                </li>
+                <li onclick="navigateToCurrencyConverter()">
+                    <i class="fas fa-exchange-alt"></i> 💱Currency Converter
+                </li>
+                <li onclick="navigateToEmergency()">
+                    <i class="fas fa-phone-alt"></i> 🚨Emergency Numbers
+                </li>
+            </ul>
+        </div>
+
+        <div class="modal" id="settingsModal">
+            <div class="modal-content">
+                <h2>⚙️ Settings</h2>
+                <div class="form-group">
+                    <label for="language">Language</label>
+                    <select id="language">
+                        <option value="English">English</option>
+                        <option value="Spanish">Spanish</option>
+                        <option value="French">French</option>
+                        <option value="Hindi">Hindi</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="theme">Dark Mode</label>
+                    <div class="toggle-switch">
+                        <label for="themeToggle">Enable Dark Mode</label>
+                        <div class="switch">
+                            <input type="checkbox" id="themeToggle" onchange="toggleTheme()">
+                            <span class="slider"></span>
+                        </div>
+                    </div>
+                </div>
+                <button class="btn" onclick="saveSettings()">💾 Save Settings</button>
+                <button class="btn" onclick="closeSettingsModal()">❌ Close</button>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+
+        let video = document.getElementById("video");
+
+        let canvas = document.getElementById("canvas");
+        let capturedImage = document.getElementById("capturedImage");
+        let captureBtn = document.getElementById("captureBtn");
+        let generateBtn = document.getElementById("generateBtn");
+        let fileInput = document.getElementById("fileInput");
+        let descriptionDiv = document.getElementById("description");
+        let promptInput = document.getElementById("promptInput");
+        let languageSelect = document.getElementById("languageSelect");
+        let locationInput = document.getElementById("locationInput");
+        let mainContainer = document.getElementById("mainContainer");
+        let rightSection = document.getElementById("rightSection");
+        let sidebar = document.getElementById("sidebar");
+        let sidebarToggle = document.getElementById("sidebarToggle");
+
+        // Open Camera
+        function openCamera() {
+            navigator.mediaDevices.getUserMedia({ video: true })
+                .then(stream => {
+                    video.srcObject = stream;
+                    video.classList.remove("hidden");
+                    captureBtn.classList.remove("hidden");
+                })
+                .catch(error => alert("Error accessing camera: " + error));
+        }
+
+        // Capture Image
+        function capturePhoto() {
+            let context = canvas.getContext("2d");
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            // Stop Camera
+            video.srcObject.getTracks().forEach(track => track.stop());
+            video.classList.add("hidden");
+            captureBtn.classList.add("hidden");
+
+            // Show Captured Image
+            capturedImage.src = canvas.toDataURL("image/png");
+            capturedImage.classList.remove("hidden");
+        }
+
+        // Handle Image Upload
+        fileInput.addEventListener("change", function (event) {
+            let file = event.target.files[0];
+            if (file) {
+                let reader = new FileReader();
+                reader.onload = function (e) {
+                    capturedImage.src = e.target.result;
+                    capturedImage.style.display = "block";
+                    generateBtn.style.display = "inline-block";
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+        function openSettingsModal() {
+            document.getElementById('settingsModal').style.display = 'flex';
+        }
+
+        // Close Settings Modal
+        function closeSettingsModal() {
+            document.getElementById('settingsModal').style.display = 'none';
+        }
+
+        // Save Settings
+        function saveSettings() {
+            const settings = {
+                language: document.getElementById('language').value,
+                darkMode: document.getElementById('themeToggle').checked,
+            };
+            alert('Settings saved successfully!');
+            console.log('Settings:', settings);
+            closeSettingsModal();
+        }
+
+        // Generate AI Description
+        async function generateDescription() {
+            descriptionDiv.innerHTML = "🤖 AI is analyzing the image...";
+            descriptionDiv.style.display = "block";
+
+            let imageData = capturedImage.src.split(",")[1]; // Get Base64 image
+            let apiKey = "AIzaSyChazsHCJQo53WM_g0oifM0ameYjXGkrIQ"; // Using the API key from gotit.html
+
+            if (!apiKey) {
+                descriptionDiv.innerHTML = "⚠ API Key is missing! Please provide your API key.";
+                return;
+            }
+
+            try {
+            let requestBody = {
+                "contents": [{
+                    "parts": [
+                            { "text": `Analyze this image and provide a detailed description in ${languageSelect.value}. Format as: <h3>Landmark Name</h3><p>...</p>` },
+                        { "inlineData": { "mimeType": "image/png", "data": imageData } }
+                    ]
+                }]
+            };
+
+            let response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(requestBody)
+            });
+
+                if (!response.ok) {
+                    throw new Error(`API error: ${response.status} - ${response.statusText}`);
+                }
+
+            let result = await response.json();
+                let formattedResponse = result?.candidates?.[0]?.content?.parts?.[0]?.text || "Could not identify landmark!";
+
+                // Add some styling to the response
+                formattedResponse = `<div class="landmark-result">${formattedResponse}</div>`;
+
+            descriptionDiv.innerHTML = formattedResponse;
+                saveHistory(formattedResponse);
+            } catch (error) {
+                console.error("Error:", error);
+                descriptionDiv.innerHTML = "Could not identify landmark! Please try again with a clearer image.";
+                saveHistory("Error: Could not identify landmark");
+            }
+        }
+        // Function to save history
+        function saveHistory(description) {
+            let history = JSON.parse(localStorage.getItem('landmarkHistory')) || [];
+            history.push(description);
+            localStorage.setItem('landmarkHistory', JSON.stringify(history));
+        }
+
+        // Function to load history
+        function loadHistory() {
+            let history = JSON.parse(localStorage.getItem('landmarkHistory')) || [];
+            let historyList = document.getElementById('historyList');
+            
+            // Check if historyList element exists before trying to use it
+            if (historyList) {
+            historyList.innerHTML = ''; // Clear existing history
+
+            history.forEach((item, index) => {
+                let li = document.createElement('li');
+                li.textContent = item;
+                li.onclick = () => {
+                    document.getElementById('description').innerHTML = item;
+                };
+                historyList.appendChild(li);
+            });
+        }
+        }
+
+        // Audio Guide
+        function speakDescription() {
+            let descriptionText = descriptionDiv.innerText;
+            if (descriptionText) {
+                let speech = new SpeechSynthesisUtterance(descriptionText);
+                speech.lang = languageSelect.value;
+                window.speechSynthesis.speak(speech);
+            } else {
+                alert("No description available to speak!");
+            }
+        }
+
+        // AI-Powered Photo Enhancement (Dummy Effect)
+        function enhancePhoto() {
+            let enhancedImg = document.getElementById("enhancedImage");
+            enhancedImg.src = capturedImage.src;
+            enhancedImg.classList.remove("hidden");
+            alert("📷 AI Enhancement Applied!");
+        }
+
+        // Search Location
+        function searchLocation() {
+            const location = locationInput.value.trim();
+            if (location) {
+                alert(`Searching for location: ${location}`);
+            } else {
+                alert("Please enter a location name!");
+            }
+        }
+
+        // Toggle Sidebar
+        function toggleSidebar() {
+            sidebar.classList.toggle("active");
+        }
+
+        // Toggle Dark/Light Mode
+        function toggleTheme() {
+            document.body.classList.toggle("dark-mode");
+            const themeToggle = document.getElementById("themeToggle");
+            themeToggle.textContent = document.body.classList.contains("dark-mode") ? "☀" : "🌙";
+        }
+
+        // Navigate to Nearby Page
+        function navigateToPage() {
+            window.location.href = "nearby.html"; // Directly navigate to nearby.html
+        }
+
+        // Navigate to Tourist Attractions Page
+        function navigateToAttractions() {
+            window.location.href = "attractions.html";
+        }
+
+        function navigateToTravelPlanner() {
+            window.location.href = 'tp.html';
+        }
+
+        function navigateToCurrencyConverter() {
+            window.location.href = 'currency-converter.html';
+        }
+
+        // Navigate to Emergency Numbers
+        function navigateToEmergency() {
+            window.location.href = 'emergency.html';
+        }
+
+        window.onload = function () {
+            loadHistory();
+        };
+    </script>
+</body>
+
+</html>

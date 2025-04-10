@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nearby Places & Events</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f4f4f4, #e0e0e0);
+            text-align: center;
+            padding: 20px;
+        background-image: url("https://st2.depositphotos.com/4135663/10198/i/450/depositphotos_101982634-stock-photo-restaurant-blurred-background.jpg");
+        background-repeat: no-repeat;  /* Prevents the image from repeating */
+    background-size: cover;        /* Ensures the image covers the entire viewport */
+    background-position: center;     
+    }
+
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h1 {
+            color: #333;
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            animation: slideIn 1s ease-in-out;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-50px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        button {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            cursor: pointer;
+            margin: 10px 0;
+            border-radius: 25px;
+            font-size: 1em;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        #map {
+            height: 300px;
+            width: 100%;
+            margin: 20px 0;
+            border-radius: 15px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            animation: fadeIn 1.5s ease-in-out;
+        }
+
+        h2 {
+            color: #444;
+            font-size: 1.8em;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        h2 i {
+            font-size: 1.2em;
+        }
+
+        #placesList, #eventsList, #facts {
+            text-align: left;
+            margin-top: 10px;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+            animation: fadeIn 1.5s ease-in-out;
+        }
+
+        ul {
+            list-style-type: none;
+        }
+
+        ul li {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: background 0.3s ease;
+        }
+
+        ul li:hover {
+            background: #f1f1f1;
+        }
+
+        ul li:last-child {
+            border-bottom: none;
+        }
+
+        ul li i {
+            color: #007bff;
+            font-size: 1.2em;
+        }
+
+        #facts {
+            font-size: 1.1em;
+            line-height: 1.6;
+            color: #555;
+        }
+
+        /* Advanced CSS for Restaurant List */
+        .restaurant-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .restaurant-card {
+            background: #fff;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .restaurant-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        .restaurant-card h3 {
+            color: #007bff;
+            font-size: 1.2em;
+            margin-bottom: 10px;
+        }
+
+        .restaurant-card p {
+            color: #555;
+            font-size: 0.9em;
+            line-height: 1.4;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+       <!-- <h1>🗺 Nearby Places & Events</h1>-->
+        <button id="getLocationBtn">📍 Find My Location</button>
+        <!--<div id="map"></div>-->
+
+        <h2><i class="fas fa-utensils"></i> Nearby Restaurants& Hotels</h2>
+        <div id="placesList"></div>
+
+        
+    </div>
+
+    <script>
+        let locationIQKey = "pk.b49c8318f81741c921c7d46911881d00";  
+        let eventbriteKey = "Q3BAZGSL5CGHFQZGXKAH";  
+        let map;
+
+        document.getElementById("getLocationBtn").addEventListener("click", getLocation);
+
+        function getLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(showMapAndPlaces, showError);
+            } else {
+                alert("Geolocation is not supported by this browser.");
+            }
+        }
+
+        function showMapAndPlaces(position) {
+            let lat = position.coords.latitude;
+            let lon = position.coords.longitude;
+
+            // Display Map
+            if (!map) {
+                map = document.createElement("iframe");
+                map.id = "map";
+                map.src = `https://www.google.com/maps?q=${lat},${lon}&z=15&output=embed`;
+                map.style.height = "300px";
+                map.style.width = "100%";
+                map.style.borderRadius = "15px";
+                map.style.boxShadow = "0 4px 10px rgba(0, 0, 0, 0.1)";
+                
+                // Insert the map before the "Nearby Restaurants" section
+                let placesSection = document.querySelector("h2");
+                document.querySelector(".container").insertBefore(map, placesSection);
+            }
+
+            // Fetch Nearby Places
+            fetchNearbyPlaces(lat, lon);
+            // Fetch Local Events
+            fetchEvents(lat, lon);
+            // Fetch Fun Facts
+            fetchFunFacts(lat, lon);
+        }
+
+        function fetchNearbyPlaces(lat, lon) {
+            let url = `https://us1.locationiq.com/v1/nearby.php?key=${locationIQKey}&lat=${lat}&lon=${lon}&tag=restaurant,hotel,tourist_attraction&radius=5000&format=json`;
+
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    let placesList = document.getElementById("placesList");
+                    placesList.innerHTML = `<div class="restaurant-list"></div>`;
+                    let restaurantList = placesList.querySelector(".restaurant-list");
+
+                    data.forEach(place => {
+                        let name = place.name || "N/A";
+                        let address = place.address ? (place.address.road || place.address.city || "Address not available") : "Address not available";
+
+                        // Create a restaurant card
+                        let card = document.createElement("div");
+                        card.className = "restaurant-card";
+                        card.innerHTML = `
+                            <h3>${name}</h3>
+                            <p><i class="fas fa-map-marker-alt"></i> ${address}</p>
+                        `;
+                        restaurantList.appendChild(card);
+                    });
+                })
+                .catch(error => console.error("Error fetching nearby places:", error));
+        }
+
+       
+       
+        function showError(error) {
+            switch (error.code) {
+                case error.PERMISSION_DENIED:
+                    alert("User denied the request for Geolocation.");
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    alert("Location information is unavailable.");
+                    break;
+                case error.TIMEOUT:
+                    alert("The request to get user location timed out.");
+                    break;
+                case error.UNKNOWN_ERROR:
+                    alert("An unknown error occurred.");
+                    break;
+            }
+        }
+    </script>
+
+</body>
+</html>

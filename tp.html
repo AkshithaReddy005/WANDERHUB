@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Travel Planner ✈️</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #74ebd5, #acb6e5);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #2d2d2d;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        h3 {
+            color: #444;
+            margin: 15px 0;
+        }
+
+        .form-group, .input-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #444;
+            font-weight: 500;
+        }
+
+        .input-box, input, select {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            background: #f5f5f5;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .input-box:focus, input:focus, select:focus {
+            outline: none;
+            background: #fff;
+            box-shadow: 0 0 10px rgba(116, 235, 213, 0.5);
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .input-group .input-box {
+            flex: 1;
+            min-width: 150px;
+        }
+
+        #suggestions {
+            position: absolute;
+            background: white;
+            width: 100%;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            max-height: 200px;
+            overflow-y: auto;
+            display: none;
+            z-index: 10;
+        }
+
+        .suggestion-item {
+            padding: 10px;
+            cursor: pointer;
+        }
+
+        .suggestion-item:hover {
+            background: #f0f0f0;
+        }
+
+        .btn, button {
+            padding: 12px 20px;
+            background: linear-gradient(45deg, #ff6b6b, #ff8e53);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .btn:hover, button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
+        }
+
+        .trips-container {
+            margin-top: 30px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 10px;
+        }
+
+        .trip-card {
+            padding: 15px;
+            margin: 10px 0;
+            background: linear-gradient(45deg, #74ebd5, #acb6e5);
+            border-radius: 8px;
+            color: #333;
+            animation: slideIn 0.5s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(-100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+            h1 {
+                font-size: 2em;
+            }
+            .input-group {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Travel Planner ✈️</h1>
+        
+        <div class="form-group">
+            <label for="destination">Destination</label>
+            <input type="text" id="destination" class="input-box" placeholder="Where are you going?">
+            <div id="suggestions"></div>
+        </div>
+
+        <div class="form-group">
+            <label for="start-date">Start Date</label>
+            <input type="date" id="start-date" class="input-box">
+        </div>
+
+        <div class="form-group">
+            <label for="end-date">End Date</label>
+            <input type="date" id="end-date" class="input-box">
+        </div>
+
+        <div class="form-group">
+            <label for="travelers">Number of Travelers</label>
+            <input type="number" id="travelers" class="input-box" min="1" placeholder="How many people?">
+        </div>
+
+        <div class="form-group">
+            <label for="interests">Travel Interests</label>
+            <select id="interests" class="input-box">
+                <option value="adventure">Adventure</option>
+                <option value="relaxation">Relaxation</option>
+                <option value="culture">Culture</option>
+                <option value="food">Food & Wine</option>
+                <option value="nature">Nature</option>
+            </select>
+        </div>
+
+        <button onclick="planTrip()">Plan My Trip!</button>
+
+        <!-- Itinerary Builder -->
+        <div class="itinerary-builder">
+            <h3>Add Activities</h3>
+            <div class="input-group">
+                <input type="text" id="activityName" class="input-box" placeholder="Activity Name">
+                <input type="time" id="activityTime" class="input-box">
+                <input type="text" id="activityLocation" class="input-box" placeholder="Location">
+                <button class="btn" onclick="addActivity()">Add Activity</button>
+            </div>
+        </div>
+
+        <!-- Trip Cards Container -->
+        <div class="trips-container" id="tripsContainer">
+            <!-- Trip cards will be added here dynamically -->
+        </div>
+    </div>
+
+    <script>
+        // No API key needed for Nominatim, but set a custom User-Agent for politeness
+        const USER_AGENT = 'TravelPlannerApp/1.0 (amrutakajuluri25@gmail.com)'; // Replace with your email
+
+        // Setup autocomplete with Nominatim
+        function setupDestinationAutocomplete() {
+            const destinationInput = document.getElementById('destination');
+            const suggestionsDiv = document.getElementById('suggestions');
+
+            destinationInput.addEventListener('input', async function() {
+                if (this.value.length < 2) {
+                    suggestionsDiv.style.display = 'none';
+                    return;
+                }
+
+                const response = await getPlacePredictions(this.value);
+                displaySuggestions(response);
+            });
+
+            destinationInput.addEventListener('blur', () => {
+                setTimeout(() => {
+                    suggestionsDiv.style.display = 'none';
+                }, 200);
+            });
+        }
+
+        async function getPlacePredictions(input) {
+            const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(input)}&format=json&limit=5&featuretype=city`;
+            const options = {
+                method: 'GET',
+                headers: {
+                    'User-Agent': USER_AGENT
+                }
+            };
+
+            try {
+                const response = await fetch(url, options);
+                const data = await response.json();
+                console.log('Autocomplete response:', data); // Debug log
+                return data.filter(item => item.class === 'place' && item.type === 'city') || []; // Filter for cities
+            } catch (error) {
+                console.error('Error fetching predictions:', error);
+                return [];
+            }
+        }
+
+        function displaySuggestions(predictions) {
+            const suggestionsDiv = document.getElementById('suggestions');
+            suggestionsDiv.innerHTML = '';
+
+            if (!predictions || predictions.length === 0) {
+                suggestionsDiv.style.display = 'none';
+                return;
+            }
+
+            predictions.forEach(prediction => {
+                const div = document.createElement('div');
+                div.className = 'suggestion-item';
+                div.textContent = prediction.display_name; // Nominatim uses 'display_name'
+                div.onclick = () => {
+                    document.getElementById('destination').value = prediction.display_name;
+                    suggestionsDiv.style.display = 'none';
+                };
+                suggestionsDiv.appendChild(div);
+            });
+
+            suggestionsDiv.style.display = 'block';
+        }
+
+        let trips = [];
+
+        async function planTrip() {
+            const destination = document.getElementById('destination').value;
+            const startDate = document.getElementById('start-date').value;
+            const endDate = document.getElementById('end-date').value;
+            const travelers = document.getElementById('travelers').value;
+            const interests = document.getElementById('interests').value;
+
+            if (!destination || !startDate || !endDate || !travelers) {
+                alert('Please fill in all required fields!');
+                return;
+            }
+
+            const placeId = await getPlaceId(destination);
+            const placeDetails = await getPlaceDetails(placeId);
+
+            const start = new Date(startDate);
+            const end = new Date(endDate);
+            const duration = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
+
+            const activitiesSuggestions = {
+                adventure: ['Hiking', 'Rock Climbing', 'Water Rafting'],
+                relaxation: ['Spa Day', 'Beach Time', 'Yoga Retreat'],
+                culture: ['Museum Tour', 'Historical Sites', 'Local Festival'],
+                food: ['Cooking Class', 'Wine Tasting', 'Food Tour'],
+                nature: ['Wildlife Safari', 'Botanical Gardens', 'Scenic Hike']
+            };
+
+            const trip = {
+                name: `Trip to ${destination}`,
+                startDate: startDate,
+                endDate: endDate,
+                type: interests,
+                activities: [],
+                travelers: travelers,
+                duration: duration,
+               // location: placeDetails ? placeDetails.display_name : destination // Use display_name as location
+            };
+
+            const suggestedActivities = activitiesSuggestions[interests] || [];
+            suggestedActivities.forEach(activity => {
+                trip.activities.push({
+                    name: activity,
+                    time: '10:00',
+                    location: destination
+                });
+            });
+
+            trips.push(trip);
+            displayTrips();
+
+            // Clear form
+            document.getElementById('destination').value = '';
+            document.getElementById('start-date').value = '';
+            document.getElementById('end-date').value = '';
+            document.getElementById('travelers').value = '';
+        }
+
+        async function getPlaceId(destination) {
+            const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(destination)}&format=json&limit=1&featuretype=city`;
+            const options = {
+                method: 'GET',
+                headers: {
+                    'User-Agent': USER_AGENT
+                }
+            };
+
+            try {
+                const response = await fetch(url, options);
+                const data = await response.json();
+                console.log('Place ID response:', data); // Debug log
+                if (data && data.length > 0) {
+                    return data[0].place_id || null; // Nominatim provides 'place_id'
+                }
+                return null;
+            } catch (error) {
+                console.error('Error fetching place ID:', error);
+                return null;
+            }
+        }
+
+        async function getPlaceDetails(placeId) {
+            if (!placeId) return null;
+
+            const url = `https://nominatim.openstreetmap.org/details?place_id=${placeId}&format=json`;
+            const options = {
+                method: 'GET',
+                headers: {
+                    'User-Agent': USER_AGENT
+                }
+            };
+
+            try {
+                const response = await fetch(url, options);
+                const data = await response.json();
+                console.log('Place details response:', data); // Debug log
+                return data || null;
+            } catch (error) {
+                console.error('Error fetching place details:', error);
+                return null;
+            }
+        }
+
+        function addActivity() {
+            const activityName = document.getElementById('activityName').value;
+            const activityTime = document.getElementById('activityTime').value;
+            const activityLocation = document.getElementById('activityLocation').value;
+
+            if (!activityName || !activityTime || !activityLocation || trips.length === 0) {
+                alert('Please plan a trip first and fill in all activity details!');
+                return;
+            }
+
+            const activity = {
+                name: activityName,
+                time: activityTime,
+                location: activityLocation
+            };
+
+            trips[trips.length - 1].activities.push(activity);
+            displayTrips();
+
+            // Clear activity form
+            document.getElementById('activityName').value = '';
+            document.getElementById('activityTime').value = '';
+            document.getElementById('activityLocation').value = '';
+        }
+
+        function displayTrips() {
+            const tripsContainer = document.getElementById('tripsContainer');
+            tripsContainer.innerHTML = '';
+
+            trips.forEach(trip => {
+                let tripHTML = `
+                    <div class="trip-card">
+                        <strong>${trip.name}</strong><br>
+                        Dates: ${trip.startDate} to ${trip.endDate} (${trip.duration} days)<br>
+                        Type: ${trip.type}<br>
+                        Travelers: ${trip.travelers}<br>
+                        Location: ${trip.location}<br>
+                        <h4>Activities:</h4>
+                `;
+
+                if (trip.activities.length > 0) {
+                    tripHTML += '<ul>';
+                    trip.activities.forEach(activity => {
+                        tripHTML += `
+                            <li>${activity.name} at ${activity.time} - ${activity.location}</li>
+                        `;
+                    });
+                    tripHTML += '</ul>';
+                } else {
+                    tripHTML += '<p>No activities added yet.</p>';
+                }
+
+                tripHTML += '</div>';
+                tripsContainer.innerHTML += tripHTML;
+            });
+
+            tripsContainer.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Initialize autocomplete
+        setupDestinationAutocomplete();
+    </script>
+</body>
+</html>
