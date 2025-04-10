@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WanderHub</title>
+    <!-- Add Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Add Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background-color: #f5f5f5;
+            overflow-x: hidden;
+        }
+
+        /* Header Styles */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(8px);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        header.scrolled {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 10px 30px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: #ffffff;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .logo:hover {
+            transform: scale(1.05);
+        }
+
+        .logo img {
+            height: 40px;
+            width: 40px;
+            margin-right: 15px;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .logo:hover img {
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: rotate(10deg);
+        }
+
+        nav {
+            display: flex;
+            gap: 25px;
+            align-items: center;
+        }
+
+        nav a {
+            color: #ffffff;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 16px;
+            padding: 8px 15px;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        nav a::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background-color: #fff;
+            transition: width 0.3s ease;
+        }
+
+        nav a:hover::before {
+            width: 100%;
+        }
+
+        nav a:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+
+        /* Add active state for current page */
+        nav a.active {
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            header {
+                padding: 15px;
+            }
+
+            .logo {
+                font-size: 20px;
+            }
+
+            .logo img {
+                height: 35px;
+                width: 35px;
+            }
+
+            nav {
+                gap: 15px;
+            }
+
+            nav a {
+                font-size: 14px;
+                padding: 6px 12px;
+            }
+        }
+
+        /* Mobile Menu */
+        @media (max-width: 640px) {
+            nav {
+                display: none; /* Add mobile menu functionality if needed */
+            }
+
+            /* Add hamburger menu button */
+            .menu-toggle {
+                display: block;
+                font-size: 24px;
+                color: white;
+                cursor: pointer;
+            }
+        }
+
+        /* Popup Styles */
+        .popup-container {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100%;
+            max-width: 430px;
+            background-color: #ffffff;
+            padding: 40px;
+            border-radius: 15px;
+            z-index: 1000;
+            box-shadow: 0 6px 0 #7d725f, 0 12px 0 #845a52, 0 18px 30px rgba(0, 0, 0, 0.2);
+            border: 3px solid #6b5a3a;
+            animation: fadeIn 0.3s ease-in-out;
+            overflow: hidden;
+        }
+
+        .popup-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, #ff9a9e, #fad0c4);
+        }
+
+        .popup-container:hover {
+            transform: translate(-50%, -50%) scale(1.02);
+        }
+
+        h2 {
+            font-size: 26px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #713b31;
+            text-align: center;
+            font-family: 'Playfair Display', serif;
+        }
+
+        .input-group {
+            margin-bottom: 18px;
+            position: relative;
+        }
+
+        label {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 6px;
+            color: #444;
+            display: block;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ffa500;
+            border-radius: 8px;
+            font-size: 15px;
+            background-color: #fffefa;
+            transition: all 0.3s ease;
+        }
+
+        input:focus, textarea:focus {
+            border-color: #80453a;
+            background-color: #fff7f3;
+            box-shadow: 0 0 10px rgba(255, 99, 71, 0.5);
+            outline: none;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: #5a5a5a;
+        }
+
+        .checkbox-group input {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+            accent-color: #7d473d;
+            margin: 0;
+        }
+
+        .checkbox-group label {
+            cursor: pointer;
+        }
+
+        .btn {
+            width: 100%;
+            background: linear-gradient(135deg, #623d35, #a86a57);
+            color: white;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 0;
+            height: 100%;
+            background: linear-gradient(135deg, #a86a57, #623d35);
+            transition: width 0.3s ease;
+            z-index: -1;
+        }
+
+        .btn:hover::before {
+            width: 100%;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .link-text {
+            text-align: center;
+            margin-top: 15px;
+            font-size: 14px;
+            color: #555;
+        }
+
+        .link-text a {
+            color: #703328;
+            font-weight: bold;
+            text-decoration: none;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .link-text a:hover {
+            color: #a86a57;
+            text-decoration: underline;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 20px;
+            cursor: pointer;
+            color: #555;
+            transition: all 0.3s ease;
+        }
+
+        .close-btn:hover {
+            color: #ff0000;
+            transform: rotate(90deg);
+        }
+
+        .emoji-header {
+            text-align: center;
+            font-size: 32px;
+            margin-bottom: 10px;
+            animation: bounce 1s infinite alternate;
+        }
+
+        @keyframes bounce {
+            from {
+                transform: translateY(0);
+            }
+            to {
+                transform: translateY(-5px);
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translate(-50%, -60%);
+            }
+
+            to {
+                opacity: 1;
+                transform: translate(-50%, -50%);
+            }
+        }
+
+        #overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+            backdrop-filter: blur(5px);
+            animation: fadeInOverlay 0.3s ease-in-out;
+        }
+
+        @keyframes fadeInOverlay {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        /* Home Page Content */
+        .video-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .video-background video {
+            min-width: 100%;
+            min-height: 100%;
+            width: auto;
+            height: auto;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            object-fit: cover;
+        }
+
+        .video-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.4));
+        }
+
+        .hero {
+            position: relative;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            text-align: center;
+            z-index: 1;
+        }
+
+        .hero-content-container {
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(8px);
+            padding: 40px 60px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            max-width: 800px;
+            width: 90%;
+            animation: fadeIn 0.8s ease-out;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-content-container::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%);
+            animation: rotate 20s linear infinite;
+            z-index: -1;
+        }
+
+        @keyframes rotate {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .hero-text h1 {
+            font-size: 48px;
+            font-weight: bold;
+            margin-bottom: 25px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            font-family: 'Playfair Display', serif;
+            animation: slideInDown 1s ease-out;
+        }
+
+        @keyframes slideInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .hero-text p {
+            font-size: 20px;
+            margin-bottom: 15px;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+            line-height: 1.5;
+            opacity: 0.9;
+            animation: slideInUp 1s ease-out 0.3s both;
+        }
+
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .button-container {
+            margin-top: 40px;
+            animation: fadeIn 1s ease-out 0.6s both;
+        }
+
+        .btn {
+            display: inline-block;
+            width: 250px;
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #f6f5fc, #e6e5fc);
+            color: rgb(14, 1, 1);
+            font-weight: bold;
+            font-size: 18px;
+            text-decoration: none;
+            border-radius: 25px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 0;
+            height: 100%;
+            background: linear-gradient(135deg, #e6e5fc, #f6f5fc);
+            transition: width 0.3s ease;
+            z-index: -1;
+        }
+
+        .btn:hover::before {
+            width: 100%;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn span.comma {
+            color: #666;
+            font-style: italic;
+        }
+
+        /* Features Section */
+        .features-container {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 50px 0;
+            margin: 0;
+            backdrop-filter: blur(5px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .features-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('https://www.transparenttextures.com/patterns/diamond-upholstery.png');
+            opacity: 0.1;
+            z-index: -1;
+        }
+
+        .features {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            padding: 0 50px;
+            text-align: center;
+            max-width: 1200px;
+            margin: 0 auto;
+            flex-wrap: wrap;
+        }
+
+        .feature-card {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            width: calc(33.333% - 30px);
+            min-width: 280px;
+            transition: all 0.4s ease;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0));
+            z-index: -1;
+            transition: all 0.4s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .feature-card:hover::before {
+            background: linear-gradient(135deg, rgba(255,255,255,0.2), rgba(255,255,255,0.1));
+        }
+
+        .feature-card img {
+            width: 120px;
+            height: 120px;
+            margin-bottom: 20px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.4s ease;
+        }
+
+        .feature-card:hover img {
+            transform: scale(1.1);
+            border-color: rgba(255, 255, 255, 0.4);
+        }
+
+        .feature-card h3 {
+            font-size: 22px;
+            color: #ffffff;
+            margin: 15px 0;
+            font-weight: 600;
+            font-family: 'Playfair Display', serif;
+        }
+
+        .feature-card p {
+            color: #e0e0e0;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .features {
+                gap: 20px;
+            }
+            
+            .feature-card {
+                width: calc(50% - 20px);
+                min-width: 250px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .feature-card {
+                width: 100%;
+                max-width: 350px;
+            }
+
+            .hero-content-container {
+                padding: 30px 20px;
+                width: 95%;
+            }
+
+            .hero-text h1 {
+                font-size: 36px;
+            }
+
+            .hero-text p {
+                font-size: 18px;
+            }
+        }
+
+        /* Footer */
+        .footer {
+            background: linear-gradient(to right, #333, #222);
+            color: white;
+            text-align: center;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .footer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 1px;
+            background: linear-gradient(to right, transparent, rgba(255,255,255,0.3), transparent);
+        }
+
+        /* Scroll Indicator */
+        .scroll-indicator {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: white;
+            animation: bounce 2s infinite;
+            cursor: pointer;
+        }
+
+        .scroll-indicator span {
+            font-size: 14px;
+            margin-top: 5px;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+        }
+
+        .scroll-indicator i {
+            font-size: 24px;
+        }
+
+        /* Section Title */
+        .section-title {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+            font-family: 'Playfair Display', serif;
+            position: relative;
+            padding-bottom: 15px;
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 3px;
+            background: linear-gradient(to right, transparent, #fff, transparent);
+        }
+
+        /* Floating Elements */
+        .floating-element {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            animation: float 15s infinite linear;
+            z-index: -1;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(0) rotate(0deg);
+            }
+            50% {
+                transform: translateY(-20px) rotate(180deg);
+            }
+            100% {
+                transform: translateY(0) rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <div class="logo">
+            <img src="https://i.pinimg.com/474x/c3/d5/46/c3d546e24f48b489e3a1a85b43a37e59.jpg" alt="illustration">
+            WANDERHUB
+        </div>
+        <nav>
+            <a href="#" class="active"><i class="fas fa-home"></i> Home</a>
+            <a onclick="openLogin()"><i class="fas fa-sign-in-alt"></i> Login</a>
+            <a onclick="openSignup()"><i class="fas fa-user-plus"></i> Sign up</a>
+            <a href="about.html"><i class="fas fa-info-circle"></i> About</a>
+            <a onclick="openFeedback()"><i class="fas fa-comment-alt"></i> Feedback</a>
+        </nav>
+    </header>
+
+    <!-- Video Background -->
+    <div class="video-background">
+        <div class="video-overlay"></div>
+        <video autoplay muted loop playsinline>
+            <source src="https://videos.pexels.com/video-files/3015510/3015510-sd_640_360_24fps.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+    </div>
+
+    <!-- Floating Elements -->
+    <div class="floating-element" style="width: 100px; height: 100px; top: 20%; left: 10%;"></div>
+    <div class="floating-element" style="width: 150px; height: 150px; top: 60%; right: 15%;"></div>
+    <div class="floating-element" style="width: 80px; height: 80px; top: 30%; right: 25%;"></div>
+    <div class="floating-element" style="width: 120px; height: 120px; bottom: 20%; left: 20%;"></div>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content-container">
+            <div class="hero-text">
+                <h1>Discover Stories Behind</h1>
+                <p>Experience world's most iconic landmarks through AI...</p>
+                <p>Upload any photo and unlock a treasure trove of historical insights</p>
+                <div class="button-container">
+                    <a href="#" class="btn">Explore <span class="comma">,</span> plan less</a>
+                </div>
+            </div>
+        </div>
+        <div class="scroll-indicator" onclick="scrollToFeatures()">
+            <i class="fas fa-chevron-down"></i>
+            <span>Scroll to explore</span>
+        </div>
+    </section>
+
+    <!-- Feature Cards Section -->
+    <section class="features-container">
+        <h2 class="section-title">Discover Our Features</h2>
+        <div class="features">
+            <div class="feature-card">
+                <img src="https://i.pinimg.com/236x/79/b2/84/79b284b24a56a09c3ac8e0d3a222593a.jpg">
+                <h3>AI-Powered Landmark Insights</h3>
+                <p>Discover detailed insights about landmarks instantly.</p>
+            </div>
+            <div class="feature-card">
+                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTRbZeRRdyDE27E9-Zd-9O25EyuP-TwKuXU9g&s"
+                    alt="Language Icon">
+                <h3>Multilingual Support</h3>
+                <p>Access landmark information in multiple languages.</p>
+            </div>
+            <div class="feature-card">
+                <img src="https://i.pinimg.com/736x/26/35/92/26359285a7554dba6c62f23441a4d16b.jpg" alt="Interactive Icon">
+                <h3>Interactive Exploration</h3>
+                <p>Engage with landmarks through interactive features.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="features-container">
+        <div class="features">
+            <div class="feature-card">
+                <img src="https://cdn-icons-png.flaticon.com/512/1779/1779940.png">
+                <h3>Weather Forecast</h3>
+                <p>Get real-time weather updates for landmarks to plan your visit accordingly.</p>
+            </div>
+            <div class="feature-card">
+                <img src="https://i.pinimg.com/236x/cd/81/bf/cd81bf1c91e6ae40a2dd2b38437f8d24.jpg" alt="Language Icon">
+                <h3>Nearby Restaurants & Cuisine</h3>
+                <p>Find the best dining options near your location</p>
+            </div>
+            <div class="feature-card">
+                <img src="https://i.pinimg.com/736x/97/f7/9f/97f79f018dbe10b6b709e7b1199f29e7.jpg" alt="Interactive Icon">
+                <h3>Maps</h3>
+                <p>Navigate and explore landmarks effortlessly with integrated maps.</p>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        &copy; 2025 WanderHub. All rights reserved.
+    </footer>
+
+    <!-- Overlay and Popups -->
+    <div id="overlay" onclick="closePopup()"></div>
+
+    <!-- Login Popup -->
+    <div class="popup-container" id="loginBox">
+        <span class="close-btn" onclick="closePopup()"><i class="fas fa-times"></i></span>
+        <div class="emoji-header">🔑</div>
+        <h2>Welcome Back!</h2>
+        <div class="input-group">
+            <label>Email / Phone</label>
+            <input type="text" placeholder="Enter your email or phone">
+        </div>
+        <div class="input-group">
+            <label>Password</label>
+            <input type="password" placeholder="Enter your password">
+        </div>
+        <div class="checkbox-group">
+            <input type="checkbox"> I agree to the <a href="#">Terms & Privacy</a>
+        </div>
+        <button class="btn" onclick="location.href='frontend.html'">Log In</button>
+        <p class="link-text">New here? <a onclick="openSignup()">Create Account</a></p>
+    </div>
+
+    <!-- Signup Popup -->
+    <div class="popup-container" id="signupBox">
+        <span class="close-btn" onclick="closePopup()"><i class="fas fa-times"></i></span>
+        <div class="emoji-header">✨</div>
+        <h2>Join Us!</h2>
+        <div class="input-group">
+            <label>Full Name</label>
+            <input type="text" placeholder="Enter your full name">
+        </div>
+        <div class="input-group">
+            <label>Email</label>
+            <input type="email" placeholder="Enter your email">
+        </div>
+        <div class="input-group">
+            <label>Password</label>
+            <input type="password" placeholder="Create a strong password">
+        </div>
+        <div class="checkbox-group">
+            <input type="checkbox" id="terms">
+            <label for="terms">I agree to the <a href="#">Terms & Privacy</a></label>
+        </div>
+
+        <button class="btn" onclick="location.href='frontend.html'">Sign Up</button>
+        <p class="link-text">Already have an account? <a onclick="openLogin()">Log In</a></p>
+    </div>
+
+    <!-- Feedback Popup -->
+    <div class="popup-container" id="feedbackBox">
+        <span class="close-btn" onclick="closePopup()"><i class="fas fa-times"></i></span>
+        <div class="emoji-header">💬</div>
+        <h2>Share Your Feedback</h2>
+        <div class="input-group">
+            <label>Name</label>
+            <input type="text" placeholder="Enter your name">
+        </div>
+        <div class="input-group">
+            <label>Email</label>
+            <input type="email" placeholder="Enter your email">
+        </div>
+        <div class="input-group">
+            <label>Feedback</label>
+            <textarea placeholder="Enter your feedback" rows="4"></textarea>
+        </div>
+        <button class="btn">Submit Feedback</button>
+    </div>
+
+    <script>
+        // Header scroll effect
+        window.addEventListener('scroll', function() {
+            const header = document.querySelector('header');
+            if (window.scrollY > 50) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
+            }
+        });
+
+        // Scroll to features section
+        function scrollToFeatures() {
+            document.querySelector('.features-container').scrollIntoView({ 
+                behavior: 'smooth' 
+            });
+        }
+
+        function openLogin() {
+            closePopup();
+            document.getElementById("loginBox").style.display = "block";
+            document.getElementById("overlay").style.display = "block";
+        }
+
+        function openSignup() {
+            closePopup();
+            document.getElementById("signupBox").style.display = "block";
+            document.getElementById("overlay").style.display = "block";
+        }
+
+        function openFeedback() {
+            closePopup();
+            document.getElementById("feedbackBox").style.display = "block";
+            document.getElementById("overlay").style.display = "block";
+        }
+
+        function closePopup() {
+            document.getElementById("loginBox").style.display = "none";
+            document.getElementById("signupBox").style.display = "none";
+            document.getElementById("overlay").style.display = "none";
+            document.getElementById("feedbackBox").style.display = "none";
+        }
+
+        window.onload = function() {
+            const btn = document.querySelector('.btn');
+            btn.innerHTML = btn.textContent.replace(/,/g, '<span class="comma">,</span>');
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get current page path
+            const currentPath = window.location.pathname;
+            
+            // Find all nav links
+            const navLinks = document.querySelectorAll('nav a');
+            
+            // Add active class to current page link
+            navLinks.forEach(link => {
+                if(link.getAttribute('href') === currentPath) {
+                    link.classList.add('active');
+                }
+            });
+        });
+    </script>
+
+</body>
+
+</html>
