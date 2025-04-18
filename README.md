@@ -44,13 +44,21 @@
 ## 📂 Project Structure
 WANDERHUB/
 ├── index.html # Main homepage
+
 ├── about.html # About section
+
 ├── attractions.html # Tourist attractions
+
 ├── currency-converter.html # Currency tool
+
 ├── emergency.html # Emergency contacts
+
 ├── weather.html # Weather forecasts
+
 ├── tp.html # Travel planner
+
 ├── nearby.html # Nearby places
+
 └── README.md # Project documentation
 
 
