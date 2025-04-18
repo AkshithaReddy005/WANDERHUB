@@ -43,10 +43,6 @@
 
 ## 📂 Project Structure
 WANDERHUB/
-├── assets/
-│ ├── css/ # Stylesheets
-│ ├── images/ # Images and icons
-│ └── js/ # JavaScript files
 ├── index.html # Main homepage
 ├── about.html # About section
 ├── attractions.html # Tourist attractions
@@ -57,7 +53,6 @@ WANDERHUB/
 ├── nearby.html # Nearby places
 └── README.md # Project documentation
 
-Copy
 
 ---
 
@@ -89,5 +84,4 @@ Push to the branch (git push origin feature/your-feature)
 
 Open a Pull Request
 
-📜 License
-This project is licensed under the MIT License - see the LICENSE file
+
